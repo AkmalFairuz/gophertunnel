@@ -24,7 +24,7 @@ type Writer struct {
 		io.ByteWriter
 	}
 	shieldID int32
-	proto    minecraft.Protocol
+	Proto    minecraft.Protocol
 }
 
 // NewWriter creates a new initialised Writer with an underlying io.ByteWriter to write to.
@@ -32,7 +32,7 @@ func NewWriter(w interface {
 	io.Writer
 	io.ByteWriter
 }, shieldID int32, proto minecraft.Protocol) *Writer {
-	return &Writer{w: w, shieldID: shieldID, proto: proto}
+	return &Writer{w: w, shieldID: shieldID, Proto: proto}
 }
 
 // Uint8 writes a uint8 to the underlying buffer.
@@ -238,7 +238,7 @@ func (w *Writer) ItemInstance(i *ItemInstance) {
 	w.Varint32(&x.BlockRuntimeID)
 
 	buf := new(bytes.Buffer)
-	bufWriter := NewWriter(buf, w.shieldID, w.proto)
+	bufWriter := NewWriter(buf, w.shieldID, w.Proto)
 
 	var length int16
 	if len(x.NBTData) != 0 {
@@ -286,7 +286,7 @@ func (w *Writer) Item(x *ItemStack) {
 
 	var extraData []byte
 	buf := bytes.NewBuffer(extraData)
-	bufWriter := NewWriter(buf, w.shieldID, w.proto)
+	bufWriter := NewWriter(buf, w.shieldID, w.Proto)
 
 	var length int16
 	if len(x.NBTData) != 0 {

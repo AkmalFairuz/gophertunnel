@@ -23,7 +23,7 @@ type Reader struct {
 		io.ByteReader
 	}
 	shieldID int32
-	proto    minecraft.Protocol
+	Proto    minecraft.Protocol
 }
 
 // NewReader creates a new Reader using the io.ByteReader passed as underlying source to read bytes from.
@@ -31,7 +31,7 @@ func NewReader(r interface {
 	io.Reader
 	io.ByteReader
 }, shieldID int32, proto minecraft.Protocol) *Reader {
-	return &Reader{r: r, shieldID: shieldID, proto: proto}
+	return &Reader{r: r, shieldID: shieldID, Proto: proto}
 }
 
 // Uint8 reads a uint8 from the underlying buffer.
@@ -323,7 +323,7 @@ func (r *Reader) ItemInstance(i *ItemInstance) {
 	r.ByteSlice(&extraData)
 
 	buf := bytes.NewBuffer(extraData)
-	bufReader := NewReader(buf, r.shieldID, r.proto)
+	bufReader := NewReader(buf, r.shieldID, r.Proto)
 
 	var length int16
 	bufReader.Int16(&length)
@@ -385,7 +385,7 @@ func (r *Reader) Item(x *ItemStack) {
 	r.ByteSlice(&extraData)
 
 	buf := bytes.NewBuffer(extraData)
-	bufReader := NewReader(buf, r.shieldID, r.proto)
+	bufReader := NewReader(buf, r.shieldID, r.Proto)
 
 	var length int16
 	bufReader.Int16(&length)
