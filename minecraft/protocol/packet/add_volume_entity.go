@@ -38,9 +38,11 @@ func (pk *AddVolumeEntity) Marshal(w *protocol.Writer) {
 	w.NBT(&pk.EntityMetadata, nbt.NetworkLittleEndian)
 	w.String(&pk.EncodingIdentifier)
 	w.String(&pk.InstanceIdentifier)
-	w.UBlockPos(&pk.Bounds[0])
-	w.UBlockPos(&pk.Bounds[1])
-	w.Varint32(&pk.Dimension)
+	if w.ProtocolID() >= protocol.ID503 {
+		w.UBlockPos(&pk.Bounds[0])
+		w.UBlockPos(&pk.Bounds[1])
+		w.Varint32(&pk.Dimension)
+	}
 	w.String(&pk.EngineVersion)
 }
 
@@ -50,8 +52,10 @@ func (pk *AddVolumeEntity) Unmarshal(r *protocol.Reader) {
 	r.NBT(&pk.EntityMetadata, nbt.NetworkLittleEndian)
 	r.String(&pk.EncodingIdentifier)
 	r.String(&pk.InstanceIdentifier)
-	r.UBlockPos(&pk.Bounds[0])
-	r.UBlockPos(&pk.Bounds[1])
-	r.Varint32(&pk.Dimension)
+	if r.ProtocolID() >= protocol.ID503 {
+		r.UBlockPos(&pk.Bounds[0])
+		r.UBlockPos(&pk.Bounds[1])
+		r.Varint32(&pk.Dimension)
+	}
 	r.String(&pk.EngineVersion)
 }

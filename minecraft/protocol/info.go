@@ -11,4 +11,6 @@ const (
 	ID527 = 527
 	// ID503 is the protocol version for 1.18.30.
 	ID503 = 503
+	// ID486 is the protocol version for 1.18.10.
+	ID486 = 486
 )

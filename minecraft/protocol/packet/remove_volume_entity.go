@@ -20,11 +20,15 @@ func (*RemoveVolumeEntity) ID() uint32 {
 // Marshal ...
 func (pk *RemoveVolumeEntity) Marshal(w *protocol.Writer) {
 	w.Uint64(&pk.EntityRuntimeID)
-	w.Varint32(&pk.Dimension)
+	if w.ProtocolID() >= protocol.ID503 {
+		w.Varint32(&pk.Dimension)
+	}
 }
 
 // Unmarshal ...
 func (pk *RemoveVolumeEntity) Unmarshal(r *protocol.Reader) {
 	r.Uint64(&pk.EntityRuntimeID)
-	r.Varint32(&pk.Dimension)
+	if r.ProtocolID() >= protocol.ID503 {
+		r.Varint32(&pk.Dimension)
+	}
 }

@@ -87,7 +87,9 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 	w.Float32(&pk.Yaw)
 	w.Float32(&pk.HeadYaw)
 	w.ItemInstance(&pk.HeldItem)
-	w.Varint32(&pk.GameType)
+	if w.ProtocolID() >= protocol.ID503 {
+		w.Varint32(&pk.GameType)
+	}
 	w.EntityMetadata(&pk.EntityMetadata)
 	if w.ProtocolID() >= protocol.ID534 {
 		w.Int64(&pk.EntityUniqueID)
@@ -129,7 +131,9 @@ func (pk *AddPlayer) Unmarshal(r *protocol.Reader) {
 	r.Float32(&pk.Yaw)
 	r.Float32(&pk.HeadYaw)
 	r.ItemInstance(&pk.HeldItem)
-	r.Varint32(&pk.GameType)
+	if r.ProtocolID() >= protocol.ID503 {
+		r.Varint32(&pk.GameType)
+	}
 	r.EntityMetadata(&pk.EntityMetadata)
 	if r.ProtocolID() >= protocol.ID534 {
 		r.Int64(&pk.EntityUniqueID)
