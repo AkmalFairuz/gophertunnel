@@ -131,14 +131,30 @@ func (pk *AddPlayer) Unmarshal(r *protocol.Reader) {
 	r.ItemInstance(&pk.HeldItem)
 	r.Varint32(&pk.GameType)
 	r.EntityMetadata(&pk.EntityMetadata)
-	r.Int64(&pk.EntityUniqueID)
-	r.Uint8(&pk.PlayerPermissions)
-	r.Uint8(&pk.CommandPermissions)
-	var layersLen uint8
-	r.Uint8(&layersLen)
-	pk.Layers = make([]protocol.AbilityLayer, layersLen)
-	for i := uint8(0); i < layersLen; i++ {
-		protocol.SerializedLayer(r, &pk.Layers[i])
+	if r.ProtocolID() >= protocol.ID534 {
+		r.Int64(&pk.EntityUniqueID)
+		r.Uint8(&pk.PlayerPermissions)
+		r.Uint8(&pk.CommandPermissions)
+		var layersLen uint8
+		r.Uint8(&layersLen)
+		pk.Layers = make([]protocol.AbilityLayer, layersLen)
+		for i := uint8(0); i < layersLen; i++ {
+			protocol.SerializedLayer(r, &pk.Layers[i])
+		}
+	} else {
+		var flags uint32
+		r.Varuint32(&flags)
+		var commandPermission uint32
+		r.Varuint32(&commandPermission)
+		pk.CommandPermissions = byte(commandPermission)
+		var playerPermission uint32
+		r.Varuint32(&playerPermission)
+		pk.PlayerPermissions = byte(playerPermission)
+		var customStoredPermission uint32
+		r.Varuint32(&customStoredPermission)
+		r.Int64(&pk.EntityUniqueID)
+
+		pk.Layers = make([]protocol.AbilityLayer, 0)
 	}
 	protocol.EntityLinks(r, &pk.EntityLinks)
 	r.String(&pk.DeviceID)
