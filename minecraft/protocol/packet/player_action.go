@@ -34,7 +34,9 @@ func (pk *PlayerAction) Marshal(w *protocol.Writer) {
 	w.Varuint64(&pk.EntityRuntimeID)
 	w.Varint32(&pk.ActionType)
 	w.UBlockPos(&pk.BlockPosition)
-	w.UBlockPos(&pk.ResultPosition)
+	if w.ProtocolID() >= protocol.ID527 {
+		w.UBlockPos(&pk.ResultPosition)
+	}
 	w.Varint32(&pk.BlockFace)
 }
 
@@ -43,6 +45,8 @@ func (pk *PlayerAction) Unmarshal(r *protocol.Reader) {
 	r.Varuint64(&pk.EntityRuntimeID)
 	r.Varint32(&pk.ActionType)
 	r.UBlockPos(&pk.BlockPosition)
-	r.UBlockPos(&pk.ResultPosition)
+	if r.ProtocolID() >= protocol.ID527 {
+		r.UBlockPos(&pk.ResultPosition)
+	}
 	r.Varint32(&pk.BlockFace)
 }

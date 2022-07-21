@@ -129,7 +129,9 @@ func (pk *PlayerAuthInput) Marshal(w *protocol.Writer) {
 	w.Varuint64(&pk.InputData)
 	w.Varuint32(&pk.InputMode)
 	w.Varuint32(&pk.PlayMode)
-	w.Varint32(&pk.InteractionModel)
+	if w.ProtocolID() >= protocol.ID527 {
+		w.Varint32(&pk.InteractionModel)
+	}
 	if pk.PlayMode == PlayModeReality {
 		w.Vec3(&pk.GazeDirection)
 	}
@@ -163,7 +165,9 @@ func (pk *PlayerAuthInput) Unmarshal(r *protocol.Reader) {
 	r.Varuint64(&pk.InputData)
 	r.Varuint32(&pk.InputMode)
 	r.Varuint32(&pk.PlayMode)
-	r.Varint32(&pk.InteractionModel)
+	if r.ProtocolID() >= protocol.ID527 {
+		r.Varint32(&pk.InteractionModel)
+	}
 	if pk.PlayMode == PlayModeReality {
 		r.Vec3(&pk.GazeDirection)
 	}

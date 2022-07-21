@@ -299,9 +299,13 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.String(&pk.MultiPlayerCorrelationID)
 	w.Bool(&pk.ServerAuthoritativeInventory)
 	w.String(&pk.GameVersion)
-	w.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
+	if w.ProtocolID() >= protocol.ID527 {
+		w.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
+	}
 	w.Uint64(&pk.ServerBlockStateChecksum)
-	w.UUID(&pk.WorldTemplateID)
+	if w.ProtocolID() >= protocol.ID527 {
+		w.UUID(&pk.WorldTemplateID)
+	}
 }
 
 // Unmarshal ...
@@ -390,7 +394,11 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.String(&pk.MultiPlayerCorrelationID)
 	r.Bool(&pk.ServerAuthoritativeInventory)
 	r.String(&pk.GameVersion)
-	r.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
+	if r.ProtocolID() >= protocol.ID527 {
+		r.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
+	}
 	r.Uint64(&pk.ServerBlockStateChecksum)
-	r.UUID(&pk.WorldTemplateID)
+	if r.ProtocolID() >= protocol.ID527 {
+		r.UUID(&pk.WorldTemplateID)
+	}
 }
