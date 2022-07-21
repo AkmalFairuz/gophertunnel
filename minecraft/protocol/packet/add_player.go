@@ -89,13 +89,28 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 	w.ItemInstance(&pk.HeldItem)
 	w.Varint32(&pk.GameType)
 	w.EntityMetadata(&pk.EntityMetadata)
-	w.Int64(&pk.EntityUniqueID)
-	w.Uint8(&pk.PlayerPermissions)
-	w.Uint8(&pk.CommandPermissions)
-	layersLen := uint8(len(pk.Layers))
-	w.Uint8(&layersLen)
-	for _, layer := range pk.Layers {
-		protocol.SerializedLayer(w, &layer)
+	if w.ProtocolID() >= protocol.Protocol534 {
+		w.Int64(&pk.EntityUniqueID)
+		w.Uint8(&pk.PlayerPermissions)
+		w.Uint8(&pk.CommandPermissions)
+		layersLen := uint8(len(pk.Layers))
+		w.Uint8(&layersLen)
+		for _, layer := range pk.Layers {
+			protocol.SerializedLayer(w, &layer)
+		}
+	} else {
+		// TODO: this shouldn't hardcoded
+		flags := uint32(0)
+		w.Varuint32(&flags)
+		commandPermission := uint32(pk.CommandPermissions)
+		w.Varuint32(&commandPermission)
+		actionPermission := uint32(0)
+		w.Varuint32(&actionPermission)
+		playerPermission := uint32(pk.PlayerPermissions)
+		w.Varuint32(&playerPermission)
+		customStoredPermission := uint32(0)
+		w.Varuint32(&customStoredPermission)
+		w.Int64(&pk.EntityUniqueID)
 	}
 	protocol.WriteEntityLinks(w, &pk.EntityLinks)
 	w.String(&pk.DeviceID)

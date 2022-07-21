@@ -64,7 +64,9 @@ func (pk *AddActor) Marshal(w *protocol.Writer) {
 	w.Float32(&pk.Pitch)
 	w.Float32(&pk.Yaw)
 	w.Float32(&pk.HeadYaw)
-	w.Float32(&pk.BodyYaw)
+	if w.ProtocolID() >= protocol.Protocol534 {
+		w.Float32(&pk.BodyYaw)
+	}
 	protocol.WriteInitialAttributes(w, &pk.Attributes)
 	w.EntityMetadata(&pk.EntityMetadata)
 	protocol.WriteEntityLinks(w, &pk.EntityLinks)
@@ -80,7 +82,9 @@ func (pk *AddActor) Unmarshal(r *protocol.Reader) {
 	r.Float32(&pk.Pitch)
 	r.Float32(&pk.Yaw)
 	r.Float32(&pk.HeadYaw)
-	r.Float32(&pk.BodyYaw)
+	if r.ProtocolID() >= protocol.Protocol534 {
+		r.Float32(&pk.BodyYaw)
+	}
 	protocol.InitialAttributes(r, &pk.Attributes)
 	r.EntityMetadata(&pk.EntityMetadata)
 	protocol.EntityLinks(r, &pk.EntityLinks)
