@@ -89,7 +89,7 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 	w.ItemInstance(&pk.HeldItem)
 	w.Varint32(&pk.GameType)
 	w.EntityMetadata(&pk.EntityMetadata)
-	if w.ProtocolID() >= protocol.Protocol534 {
+	if w.ProtocolID() >= protocol.ID534 {
 		w.Int64(&pk.EntityUniqueID)
 		w.Uint8(&pk.PlayerPermissions)
 		w.Uint8(&pk.CommandPermissions)

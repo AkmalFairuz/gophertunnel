@@ -64,7 +64,7 @@ func (pk *AddActor) Marshal(w *protocol.Writer) {
 	w.Float32(&pk.Pitch)
 	w.Float32(&pk.Yaw)
 	w.Float32(&pk.HeadYaw)
-	if w.ProtocolID() >= protocol.Protocol534 {
+	if w.ProtocolID() >= protocol.ID534 {
 		w.Float32(&pk.BodyYaw)
 	}
 	protocol.WriteInitialAttributes(w, &pk.Attributes)
@@ -82,7 +82,7 @@ func (pk *AddActor) Unmarshal(r *protocol.Reader) {
 	r.Float32(&pk.Pitch)
 	r.Float32(&pk.Yaw)
 	r.Float32(&pk.HeadYaw)
-	if r.ProtocolID() >= protocol.Protocol534 {
+	if r.ProtocolID() >= protocol.ID534 {
 		r.Float32(&pk.BodyYaw)
 	}
 	protocol.InitialAttributes(r, &pk.Attributes)
