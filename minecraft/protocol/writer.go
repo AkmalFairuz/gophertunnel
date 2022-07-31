@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"
-	"github.com/sandertv/gophertunnel/minecraft"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 	"image/color"
 	"io"
@@ -24,19 +23,19 @@ type Writer struct {
 		io.ByteWriter
 	}
 	shieldID int32
-	Proto    minecraft.Protocol
+	Proto    int
 }
 
 // NewWriter creates a new initialised Writer with an underlying io.ByteWriter to write to.
 func NewWriter(w interface {
 	io.Writer
 	io.ByteWriter
-}, shieldID int32, proto minecraft.Protocol) *Writer {
+}, shieldID int32, proto int) *Writer {
 	return &Writer{w: w, shieldID: shieldID, Proto: proto}
 }
 
-func (w *Writer) ProtocolID() int32 {
-	return w.Proto.ID()
+func (w *Writer) ProtocolID() int {
+	return w.Proto
 }
 
 // Uint8 writes a uint8 to the underlying buffer.

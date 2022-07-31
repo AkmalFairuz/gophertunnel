@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"
-	"github.com/sandertv/gophertunnel/minecraft"
 	"github.com/sandertv/gophertunnel/minecraft/nbt"
 	"image/color"
 	"io"
@@ -23,19 +22,19 @@ type Reader struct {
 		io.ByteReader
 	}
 	shieldID int32
-	Proto    minecraft.Protocol
+	Proto    int
 }
 
 // NewReader creates a new Reader using the io.ByteReader passed as underlying source to read bytes from.
 func NewReader(r interface {
 	io.Reader
 	io.ByteReader
-}, shieldID int32, proto minecraft.Protocol) *Reader {
+}, shieldID int32, proto int) *Reader {
 	return &Reader{r: r, shieldID: shieldID, Proto: proto}
 }
 
-func (r *Reader) ProtocolID() int32 {
-	return r.Proto.ID()
+func (r *Reader) ProtocolID() int {
+	return r.Proto
 }
 
 // Uint8 reads a uint8 from the underlying buffer.
