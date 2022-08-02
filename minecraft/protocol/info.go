@@ -1,5 +1,12 @@
 package protocol
 
+var AcceptedProtocols = []int32{
+	ID534,
+	ID527,
+	ID503,
+	ID486,
+}
+
 const (
 	// CurrentProtocol is the current protocol version for the version below.
 	CurrentProtocol = 534
