@@ -1311,3 +1311,7 @@ func (conn *Conn) closeErr(op string) error {
 func (conn *Conn) ProtocolID() int32 {
 	return conn.proto.ID()
 }
+
+func (conn *Conn) Protocol() Protocol {
+	return conn.proto
+}
