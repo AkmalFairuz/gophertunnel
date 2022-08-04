@@ -33,10 +33,10 @@ type Protocol interface {
 // Proto is the default Protocol implementation. It returns the current protocol, version and packet pool and does not
 // convert any packets, as they are already of the right type.
 type Proto struct {
-	id int32
+	Id int32
 }
 
-func (p Proto) ID() int32                                                 { return p.id }
+func (p Proto) ID() int32                                                 { return p.Id }
 func (p Proto) Ver() string                                               { return protocol.CurrentVersion }
 func (p Proto) Packets() packet.Pool                                      { return packet.NewPool() }
 func (p Proto) ConvertToLatest(pk packet.Packet, _ *Conn) []packet.Packet { return []packet.Packet{pk} }

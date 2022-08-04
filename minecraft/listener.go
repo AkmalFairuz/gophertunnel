@@ -84,7 +84,7 @@ type Listener struct {
 func (cfg ListenConfig) Listen(network string, address string) (*Listener, error) {
 	n, ok := networkByID(network)
 	if !ok {
-		return nil, fmt.Errorf("listen: no network under id: %v", network)
+		return nil, fmt.Errorf("listen: no network under Id: %v", network)
 	}
 
 	netListener, err := n.Listen(address)
@@ -202,9 +202,9 @@ func (listener *Listener) listen() {
 // accepted once its login sequence is complete.
 func (listener *Listener) createConn(netConn net.Conn) {
 	conn := newConn(netConn, listener.key, listener.cfg.ErrorLog)
-	conn.acceptedProto = append(listener.cfg.AcceptedProtocols, Proto{id: protocol.CurrentProtocol})
+	conn.acceptedProto = append(listener.cfg.AcceptedProtocols, Proto{Id: protocol.CurrentProtocol})
 	// Temporarily set the protocol to the latest: We don't know the actual protocol until we read the Login packet.
-	conn.proto = Proto{id: protocol.CurrentProtocol}
+	conn.proto = Proto{Id: protocol.CurrentProtocol}
 	conn.pool = conn.proto.Packets()
 
 	conn.packetFunc = listener.cfg.PacketFunc

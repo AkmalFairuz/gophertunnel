@@ -134,12 +134,12 @@ func (d Dialer) DialContext(ctx context.Context, network, address string) (conn 
 		d.ErrorLog = log.New(os.Stderr, "", log.LstdFlags)
 	}
 	if d.Protocol == nil {
-		d.Protocol = Proto{id: protocol.CurrentProtocol}
+		d.Protocol = Proto{Id: protocol.CurrentProtocol}
 	}
 
 	n, ok := networkByID(network)
 	if !ok {
-		return nil, fmt.Errorf("listen: no network under id: %v", network)
+		return nil, fmt.Errorf("listen: no network under Id: %v", network)
 	}
 
 	var pong []byte

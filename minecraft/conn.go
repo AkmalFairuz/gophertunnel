@@ -661,7 +661,7 @@ func (conn *Conn) handleLogin(pk *packet.Login) error {
 	found := false
 	for _, pro := range protocol.AcceptedProtocols {
 		if pro == pk.ClientProtocol {
-			conn.proto = Proto{id: pro}
+			conn.proto = Proto{Id: pro}
 			conn.pool = conn.proto.Packets()
 			found = true
 			break

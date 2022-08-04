@@ -39,7 +39,7 @@ type NetworkListener interface {
 	PongData(data []byte)
 }
 
-// networks holds a map of id => Network to be used for looking up the network by an ID. It is registered to when calling
+// networks holds a map of Id => Network to be used for looking up the network by an ID. It is registered to when calling
 // RegisterNetwork.
 var networks = map[string]Network{}
 
