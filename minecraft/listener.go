@@ -202,7 +202,7 @@ func (listener *Listener) listen() {
 // accepted once its login sequence is complete.
 func (listener *Listener) createConn(netConn net.Conn) {
 	conn := newConn(netConn, listener.key, listener.cfg.ErrorLog)
-	conn.acceptedProto = append(listener.cfg.AcceptedProtocols, proto{})
+	conn.acceptedProto = append(listener.cfg.AcceptedProtocols, proto{id: protocol.CurrentProtocol})
 	// Temporarily set the protocol to the latest: We don't know the actual protocol until we read the Login packet.
 	conn.proto = proto{id: protocol.CurrentProtocol}
 	conn.pool = conn.proto.Packets()
