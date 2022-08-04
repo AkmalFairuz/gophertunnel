@@ -30,16 +30,16 @@ type Protocol interface {
 	ConvertFromLatest(pk packet.Packet, conn *Conn) []packet.Packet
 }
 
-// proto is the default Protocol implementation. It returns the current protocol, version and packet pool and does not
+// Proto is the default Protocol implementation. It returns the current protocol, version and packet pool and does not
 // convert any packets, as they are already of the right type.
-type proto struct {
+type Proto struct {
 	id int32
 }
 
-func (p proto) ID() int32                                                 { return p.id }
-func (p proto) Ver() string                                               { return protocol.CurrentVersion }
-func (p proto) Packets() packet.Pool                                      { return packet.NewPool() }
-func (p proto) ConvertToLatest(pk packet.Packet, _ *Conn) []packet.Packet { return []packet.Packet{pk} }
-func (p proto) ConvertFromLatest(pk packet.Packet, _ *Conn) []packet.Packet {
+func (p Proto) ID() int32                                                 { return p.id }
+func (p Proto) Ver() string                                               { return protocol.CurrentVersion }
+func (p Proto) Packets() packet.Pool                                      { return packet.NewPool() }
+func (p Proto) ConvertToLatest(pk packet.Packet, _ *Conn) []packet.Packet { return []packet.Packet{pk} }
+func (p Proto) ConvertFromLatest(pk packet.Packet, _ *Conn) []packet.Packet {
 	return []packet.Packet{pk}
 }

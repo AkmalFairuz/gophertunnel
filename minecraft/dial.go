@@ -134,7 +134,7 @@ func (d Dialer) DialContext(ctx context.Context, network, address string) (conn 
 		d.ErrorLog = log.New(os.Stderr, "", log.LstdFlags)
 	}
 	if d.Protocol == nil {
-		d.Protocol = proto{id: protocol.CurrentProtocol}
+		d.Protocol = Proto{id: protocol.CurrentProtocol}
 	}
 
 	n, ok := networkByID(network)
