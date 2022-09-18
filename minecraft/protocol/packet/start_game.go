@@ -279,16 +279,20 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.Bool(&pk.FromWorldTemplate)
 	w.Bool(&pk.WorldTemplateSettingsLocked)
 	w.Bool(&pk.OnlySpawnV1Villagers)
-	w.Bool(&pk.PersonaDisabled)
-	w.Bool(&pk.CustomSkinsDisabled)
+	if w.ProtocolID() >= protocol.ID544 {
+		w.Bool(&pk.PersonaDisabled)
+		w.Bool(&pk.CustomSkinsDisabled)
+	}
 	w.String(&pk.BaseGameVersion)
 	w.Int32(&pk.LimitedWorldWidth)
 	w.Int32(&pk.LimitedWorldDepth)
 	w.Bool(&pk.NewNether)
 	protocol.EducationResourceURI(w, &pk.EducationSharedResourceURI)
-	protocol.OptionalFunc(w, &pk.ForceExperimentalGameplay, w.Bool)
-	w.Uint8(&pk.ChatRestrictionLevel)
-	w.Bool(&pk.DisablePlayerInteractions)
+	if w.ProtocolID() >= protocol.ID544 {
+		protocol.OptionalFunc(w, &pk.ForceExperimentalGameplay, w.Bool)
+		w.Uint8(&pk.ChatRestrictionLevel)
+		w.Bool(&pk.DisablePlayerInteractions)
+	}
 	w.String(&pk.LevelID)
 	w.String(&pk.WorldName)
 	w.String(&pk.TemplateContentIdentity)
@@ -360,16 +364,20 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.Bool(&pk.FromWorldTemplate)
 	r.Bool(&pk.WorldTemplateSettingsLocked)
 	r.Bool(&pk.OnlySpawnV1Villagers)
-	r.Bool(&pk.PersonaDisabled)
-	r.Bool(&pk.CustomSkinsDisabled)
+	if r.ProtocolID() >= protocol.ID544 {
+		r.Bool(&pk.PersonaDisabled)
+		r.Bool(&pk.CustomSkinsDisabled)
+	}
 	r.String(&pk.BaseGameVersion)
 	r.Int32(&pk.LimitedWorldWidth)
 	r.Int32(&pk.LimitedWorldDepth)
 	r.Bool(&pk.NewNether)
 	protocol.EducationResourceURI(r, &pk.EducationSharedResourceURI)
-	protocol.OptionalFunc(r, &pk.ForceExperimentalGameplay, r.Bool)
-	r.Uint8(&pk.ChatRestrictionLevel)
-	r.Bool(&pk.DisablePlayerInteractions)
+	if r.ProtocolID() >= protocol.ID544 {
+		protocol.OptionalFunc(r, &pk.ForceExperimentalGameplay, r.Bool)
+		r.Uint8(&pk.ChatRestrictionLevel)
+		r.Bool(&pk.DisablePlayerInteractions)
+	}
 	r.String(&pk.LevelID)
 	r.String(&pk.WorldName)
 	r.String(&pk.TemplateContentIdentity)

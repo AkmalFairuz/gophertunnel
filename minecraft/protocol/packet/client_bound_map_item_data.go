@@ -81,7 +81,9 @@ func (pk *ClientBoundMapItemData) Marshal(w *protocol.Writer) {
 	w.Varuint32(&pk.UpdateFlags)
 	w.Uint8(&pk.Dimension)
 	w.Bool(&pk.LockedMap)
-	w.BlockPos(&pk.Origin)
+	if w.ProtocolID() >= protocol.ID544 {
+		w.BlockPos(&pk.Origin)
+	}
 
 	if pk.UpdateFlags&MapUpdateFlagInitialisation != 0 {
 		protocol.FuncSlice(w, &pk.MapsIncludedIn, w.Varint64)
@@ -108,7 +110,9 @@ func (pk *ClientBoundMapItemData) Unmarshal(r *protocol.Reader) {
 	r.Varuint32(&pk.UpdateFlags)
 	r.Uint8(&pk.Dimension)
 	r.Bool(&pk.LockedMap)
-	r.BlockPos(&pk.Origin)
+	if r.ProtocolID() >= protocol.ID544 {
+		r.BlockPos(&pk.Origin)
+	}
 
 	if pk.UpdateFlags&MapUpdateFlagInitialisation != 0 {
 		protocol.FuncSlice(r, &pk.MapsIncludedIn, r.Varint64)

@@ -45,8 +45,10 @@ func (pk *EducationSettings) Marshal(w *protocol.Writer) {
 	w.String(&pk.PostProcessFilter)
 	w.String(&pk.ScreenshotBorderPath)
 
-	protocol.OptionalFunc(w, &pk.CanModifyBlocks, w.Bool)
-	protocol.OptionalFunc(w, &pk.OverrideURI, w.String)
+	if w.ProtocolID() >= protocol.ID544 {
+		protocol.OptionalFunc(w, &pk.CanModifyBlocks, w.Bool)
+		protocol.OptionalFunc(w, &pk.OverrideURI, w.String)
+	}
 
 	w.Bool(&pk.HasQuiz)
 
@@ -62,8 +64,10 @@ func (pk *EducationSettings) Unmarshal(r *protocol.Reader) {
 	r.String(&pk.PostProcessFilter)
 	r.String(&pk.ScreenshotBorderPath)
 
-	protocol.OptionalFunc(r, &pk.CanModifyBlocks, r.Bool)
-	protocol.OptionalFunc(r, &pk.OverrideURI, r.String)
+	if r.ProtocolID() >= protocol.ID544 {
+		protocol.OptionalFunc(r, &pk.CanModifyBlocks, r.Bool)
+		protocol.OptionalFunc(r, &pk.OverrideURI, r.String)
+	}
 
 	r.Bool(&pk.HasQuiz)
 

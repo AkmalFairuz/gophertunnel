@@ -176,6 +176,10 @@ type Optional[T any] struct {
 	val T
 }
 
+func NewOptional[T any](set bool, val T) Optional[T] {
+	return Optional[T]{set: set, val: val}
+}
+
 // Option creates an Optional[T] with the value passed.
 func Option[T any](val T) Optional[T] {
 	return Optional[T]{set: true, val: val}
