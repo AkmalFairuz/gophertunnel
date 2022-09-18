@@ -1,6 +1,8 @@
 package protocol
 
 var AcceptedProtocols = []int32{
+	ID545,
+	ID544,
 	ID534,
 	ID527,
 	ID503,
@@ -9,9 +11,13 @@ var AcceptedProtocols = []int32{
 
 const (
 	// CurrentProtocol is the current protocol version for the version below.
-	CurrentProtocol = 534
+	CurrentProtocol = 545
 	// CurrentVersion is the current version of Minecraft as supported by the `packet` package.
-	CurrentVersion = "1.19.10"
+	CurrentVersion = "1.19.21"
+	// ID545 is the protocol version for 1.19.21.
+	ID545 = 545
+	// ID544 is the protocol version for 1.19.20.
+	ID544 = 544
 	// ID534 is the protocol version for 1.19.10.
 	ID534 = 534
 	// ID527 is the protocol version for 1.19.0.

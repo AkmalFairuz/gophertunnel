@@ -12,6 +12,12 @@ const (
 	SpawnBiomeTypeUserDefined
 )
 
+const (
+	ChatRestrictionLevelNone     = 0
+	ChatRestrictionLevelDropped  = 1
+	ChatRestrictionLevelDisabled = 2
+)
+
 // StartGame is sent by the server to send information about the world the player will be spawned in. It
 // contains information about the position the player spawns in, and information about the world in general
 // such as its game rules.
@@ -152,6 +158,10 @@ type StartGame struct {
 	// OnlySpawnV1Villagers is a hack that Mojang put in place to preserve backwards compatibility with old
 	// villagers. The bool is never actually read though, so it has no functionality.
 	OnlySpawnV1Villagers bool
+	// PersonaDisabled is true if persona skins are disabled for the current game session.
+	PersonaDisabled bool
+	// CustomSkinsDisabled is true if custom skins are disabled for the current game session.
+	CustomSkinsDisabled bool
 	// BaseGameVersion is the version of the game from which Vanilla features will be used. The exact function
 	// of this field isn't clear.
 	BaseGameVersion string
@@ -164,7 +174,7 @@ type StartGame struct {
 	EducationSharedResourceURI protocol.EducationSharedResourceURI
 	// ForceExperimentalGameplay specifies if experimental gameplay should be force enabled. For servers this
 	// should always be set to false.
-	ForceExperimentalGameplay bool
+	ForceExperimentalGameplay protocol.Optional[bool]
 	// LevelID is a base64 encoded world ID that is used to identify the world.
 	LevelID string
 	// WorldName is the name of the world that the player is joining. Note that this field shows up above the
@@ -205,9 +215,16 @@ type StartGame struct {
 	// ServerBlockStateChecksum is a checksum to ensure block states between the server and client match.
 	// This can simply be left empty, and the client will avoid trying to verify it.
 	ServerBlockStateChecksum uint64
+	// ClientSideGeneration is true if the client should use the features registered in the FeatureRegistry packet to
+	// generate terrain client-side to save on bandwidth.
+	ClientSideGeneration bool
 	// WorldTemplateID is a UUID that identifies the template that was used to generate the world. Servers that do not
 	// use a world based off of a template can set this to an empty UUID.
 	WorldTemplateID uuid.UUID
+	// ChatRestrictionLevel specifies the level of restriction on in-game chat. It is one of the constants above.
+	ChatRestrictionLevel uint8
+	// DisablePlayerInteractions is true if the client should ignore other players when interacting with the world.
+	DisablePlayerInteractions bool
 }
 
 // ID ...
@@ -248,12 +265,8 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.Varint32(&pk.PlatformBroadcastMode)
 	w.Bool(&pk.CommandsEnabled)
 	w.Bool(&pk.TexturePackRequired)
-	protocol.WriteGameRules(w, &pk.GameRules)
-	l := uint32(len(pk.Experiments))
-	w.Uint32(&l)
-	for _, experiment := range pk.Experiments {
-		protocol.Experiment(w, &experiment)
-	}
+	protocol.FuncSlice(w, &pk.GameRules, w.GameRule)
+	protocol.SliceUint32Length(w, &pk.Experiments)
 	w.Bool(&pk.ExperimentsPreviouslyToggled)
 	w.Bool(&pk.BonusChestEnabled)
 	w.Bool(&pk.StartWithMapEnabled)
@@ -266,17 +279,16 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.Bool(&pk.FromWorldTemplate)
 	w.Bool(&pk.WorldTemplateSettingsLocked)
 	w.Bool(&pk.OnlySpawnV1Villagers)
+	w.Bool(&pk.PersonaDisabled)
+	w.Bool(&pk.CustomSkinsDisabled)
 	w.String(&pk.BaseGameVersion)
 	w.Int32(&pk.LimitedWorldWidth)
 	w.Int32(&pk.LimitedWorldDepth)
 	w.Bool(&pk.NewNether)
 	protocol.EducationResourceURI(w, &pk.EducationSharedResourceURI)
-	w.Bool(&pk.ForceExperimentalGameplay)
-	if pk.ForceExperimentalGameplay {
-		// This might look wrong, but is in fact correct: Mojang is writing this bool if the same bool above
-		// is set to true.
-		w.Bool(&pk.ForceExperimentalGameplay)
-	}
+	protocol.OptionalFunc(w, &pk.ForceExperimentalGameplay, w.Bool)
+	w.Uint8(&pk.ChatRestrictionLevel)
+	w.Bool(&pk.DisablePlayerInteractions)
 	w.String(&pk.LevelID)
 	w.String(&pk.WorldName)
 	w.String(&pk.TemplateContentIdentity)
@@ -284,18 +296,8 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	protocol.PlayerMoveSettings(w, &pk.PlayerMovementSettings)
 	w.Int64(&pk.Time)
 	w.Varint32(&pk.EnchantmentSeed)
-
-	l = uint32(len(pk.Blocks))
-	w.Varuint32(&l)
-	for i := range pk.Blocks {
-		protocol.Block(w, &pk.Blocks[i])
-	}
-
-	l = uint32(len(pk.Items))
-	w.Varuint32(&l)
-	for i := range pk.Items {
-		protocol.Item(w, &pk.Items[i])
-	}
+	protocol.Slice(w, &pk.Blocks)
+	protocol.Slice(w, &pk.Items)
 	w.String(&pk.MultiPlayerCorrelationID)
 	w.Bool(&pk.ServerAuthoritativeInventory)
 	w.String(&pk.GameVersion)
@@ -303,14 +305,16 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 		w.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
 	}
 	w.Uint64(&pk.ServerBlockStateChecksum)
-	if w.ProtocolID() >= protocol.ID527 {
+	if w.ProtocolID() >= protocol.ID534 {
 		w.UUID(&pk.WorldTemplateID)
+	}
+	if w.ProtocolID() >= protocol.ID544 {
+		w.Bool(&pk.ClientSideGeneration)
 	}
 }
 
 // Unmarshal ...
 func (pk *StartGame) Unmarshal(r *protocol.Reader) {
-	var blockCount, itemCount uint32
 	r.Varint64(&pk.EntityUniqueID)
 	r.Varuint64(&pk.EntityRuntimeID)
 	r.Varint32(&pk.PlayerGameMode)
@@ -342,13 +346,8 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.Varint32(&pk.PlatformBroadcastMode)
 	r.Bool(&pk.CommandsEnabled)
 	r.Bool(&pk.TexturePackRequired)
-	protocol.GameRules(r, &pk.GameRules)
-	var l uint32
-	r.Uint32(&l)
-	pk.Experiments = make([]protocol.ExperimentData, l)
-	for i := uint32(0); i < l; i++ {
-		protocol.Experiment(r, &pk.Experiments[i])
-	}
+	protocol.FuncSlice(r, &pk.GameRules, r.GameRule)
+	protocol.SliceUint32Length(r, &pk.Experiments)
 	r.Bool(&pk.ExperimentsPreviouslyToggled)
 	r.Bool(&pk.BonusChestEnabled)
 	r.Bool(&pk.StartWithMapEnabled)
@@ -361,17 +360,16 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.Bool(&pk.FromWorldTemplate)
 	r.Bool(&pk.WorldTemplateSettingsLocked)
 	r.Bool(&pk.OnlySpawnV1Villagers)
+	r.Bool(&pk.PersonaDisabled)
+	r.Bool(&pk.CustomSkinsDisabled)
 	r.String(&pk.BaseGameVersion)
 	r.Int32(&pk.LimitedWorldWidth)
 	r.Int32(&pk.LimitedWorldDepth)
 	r.Bool(&pk.NewNether)
 	protocol.EducationResourceURI(r, &pk.EducationSharedResourceURI)
-	r.Bool(&pk.ForceExperimentalGameplay)
-	if pk.ForceExperimentalGameplay {
-		// This might look wrong, but is in fact correct: Mojang is writing this bool if the same bool above
-		// is set to true.
-		r.Bool(&pk.ForceExperimentalGameplay)
-	}
+	protocol.OptionalFunc(r, &pk.ForceExperimentalGameplay, r.Bool)
+	r.Uint8(&pk.ChatRestrictionLevel)
+	r.Bool(&pk.DisablePlayerInteractions)
 	r.String(&pk.LevelID)
 	r.String(&pk.WorldName)
 	r.String(&pk.TemplateContentIdentity)
@@ -379,18 +377,8 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	protocol.PlayerMoveSettings(r, &pk.PlayerMovementSettings)
 	r.Int64(&pk.Time)
 	r.Varint32(&pk.EnchantmentSeed)
-
-	r.Varuint32(&blockCount)
-	pk.Blocks = make([]protocol.BlockEntry, blockCount)
-	for i := uint32(0); i < blockCount; i++ {
-		protocol.Block(r, &pk.Blocks[i])
-	}
-
-	r.Varuint32(&itemCount)
-	pk.Items = make([]protocol.ItemEntry, itemCount)
-	for i := uint32(0); i < itemCount; i++ {
-		protocol.Item(r, &pk.Items[i])
-	}
+	protocol.Slice(r, &pk.Blocks)
+	protocol.Slice(r, &pk.Items)
 	r.String(&pk.MultiPlayerCorrelationID)
 	r.Bool(&pk.ServerAuthoritativeInventory)
 	r.String(&pk.GameVersion)
@@ -398,7 +386,12 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 		r.NBT(&pk.PropertyData, nbt.NetworkLittleEndian)
 	}
 	r.Uint64(&pk.ServerBlockStateChecksum)
+
 	if r.ProtocolID() >= protocol.ID527 {
 		r.UUID(&pk.WorldTemplateID)
+	}
+	r.UUID(&pk.WorldTemplateID)
+	if r.ProtocolID() >= protocol.ID544 {
+		r.Bool(&pk.ClientSideGeneration)
 	}
 }

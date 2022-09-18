@@ -97,9 +97,7 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 		w.Uint8(&pk.CommandPermissions)
 		layersLen := uint8(len(pk.Layers))
 		w.Uint8(&layersLen)
-		for _, layer := range pk.Layers {
-			protocol.SerializedLayer(w, &layer)
-		}
+		protocol.SliceUint8Length(w, &pk.Layers)
 	} else {
 		// TODO: this shouldn't hardcoded
 		flags := uint32(0)
@@ -114,7 +112,7 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 		w.Varuint32(&customStoredPermission)
 		w.Int64(&pk.EntityUniqueID)
 	}
-	protocol.WriteEntityLinks(w, &pk.EntityLinks)
+	protocol.Slice(w, &pk.EntityLinks)
 	w.String(&pk.DeviceID)
 	w.Int32(&pk.BuildPlatform)
 }
@@ -142,9 +140,7 @@ func (pk *AddPlayer) Unmarshal(r *protocol.Reader) {
 		var layersLen uint8
 		r.Uint8(&layersLen)
 		pk.Layers = make([]protocol.AbilityLayer, layersLen)
-		for i := uint8(0); i < layersLen; i++ {
-			protocol.SerializedLayer(r, &pk.Layers[i])
-		}
+		protocol.SliceUint8Length(r, &pk.Layers)
 	} else {
 		var flags uint32
 		r.Varuint32(&flags)
@@ -160,7 +156,7 @@ func (pk *AddPlayer) Unmarshal(r *protocol.Reader) {
 
 		pk.Layers = make([]protocol.AbilityLayer, 0)
 	}
-	protocol.EntityLinks(r, &pk.EntityLinks)
+	protocol.Slice(r, &pk.EntityLinks)
 	r.String(&pk.DeviceID)
 	r.Int32(&pk.BuildPlatform)
 }
