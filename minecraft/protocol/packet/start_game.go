@@ -240,7 +240,12 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.Vec3(&pk.PlayerPosition)
 	w.Float32(&pk.Pitch)
 	w.Float32(&pk.Yaw)
-	w.Uint64(&pk.WorldSeed)
+	if w.ProtocolID() >= protocol.ID503 {
+		w.Uint64(&pk.WorldSeed)
+	} else {
+		seed := int32(pk.WorldSeed)
+		w.Varint32(&seed)
+	}
 	w.Int16(&pk.SpawnBiomeType)
 	w.String(&pk.UserDefinedBiomeName)
 	w.Varint32(&pk.Dimension)
@@ -288,8 +293,8 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.Int32(&pk.LimitedWorldDepth)
 	w.Bool(&pk.NewNether)
 	protocol.EducationResourceURI(w, &pk.EducationSharedResourceURI)
+	protocol.OptionalFunc(w, &pk.ForceExperimentalGameplay, w.Bool)
 	if w.ProtocolID() >= protocol.ID544 {
-		protocol.OptionalFunc(w, &pk.ForceExperimentalGameplay, w.Bool)
 		w.Uint8(&pk.ChatRestrictionLevel)
 		w.Bool(&pk.DisablePlayerInteractions)
 	}
@@ -325,7 +330,13 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.Vec3(&pk.PlayerPosition)
 	r.Float32(&pk.Pitch)
 	r.Float32(&pk.Yaw)
-	r.Uint64(&pk.WorldSeed)
+	if r.ProtocolID() >= protocol.ID503 {
+		r.Uint64(&pk.WorldSeed)
+	} else {
+		var seed int32
+		r.Varint32(&seed)
+		pk.WorldSeed = uint64(seed)
+	}
 	r.Int16(&pk.SpawnBiomeType)
 	r.String(&pk.UserDefinedBiomeName)
 	r.Varint32(&pk.Dimension)
@@ -373,8 +384,8 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.Int32(&pk.LimitedWorldDepth)
 	r.Bool(&pk.NewNether)
 	protocol.EducationResourceURI(r, &pk.EducationSharedResourceURI)
+	protocol.OptionalFunc(r, &pk.ForceExperimentalGameplay, r.Bool)
 	if r.ProtocolID() >= protocol.ID544 {
-		protocol.OptionalFunc(r, &pk.ForceExperimentalGameplay, r.Bool)
 		r.Uint8(&pk.ChatRestrictionLevel)
 		r.Bool(&pk.DisablePlayerInteractions)
 	}
