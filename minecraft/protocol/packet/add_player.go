@@ -79,6 +79,10 @@ func (*AddPlayer) ID() uint32 {
 func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 	w.UUID(&pk.UUID)
 	w.String(&pk.Username)
+	if w.ProtocolID() < protocol.ID534 {
+		actorUid := int64(pk.EntityRuntimeID)
+		w.Varint64(&actorUid)
+	}
 	w.Varuint64(&pk.EntityRuntimeID)
 	w.String(&pk.PlatformChatID)
 	w.Vec3(&pk.Position)
@@ -95,8 +99,6 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 		w.Int64(&pk.EntityUniqueID)
 		w.Uint8(&pk.PlayerPermissions)
 		w.Uint8(&pk.CommandPermissions)
-		layersLen := uint8(len(pk.Layers))
-		w.Uint8(&layersLen)
 		protocol.SliceUint8Length(w, &pk.Layers)
 	} else {
 		// TODO: this shouldn't hardcoded
@@ -121,6 +123,10 @@ func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 func (pk *AddPlayer) Unmarshal(r *protocol.Reader) {
 	r.UUID(&pk.UUID)
 	r.String(&pk.Username)
+	if r.ProtocolID() < protocol.ID534 {
+		var actorUid int64
+		r.Varint64(&actorUid)
+	}
 	r.Varuint64(&pk.EntityRuntimeID)
 	r.String(&pk.PlatformChatID)
 	r.Vec3(&pk.Position)
@@ -137,21 +143,25 @@ func (pk *AddPlayer) Unmarshal(r *protocol.Reader) {
 		r.Int64(&pk.EntityUniqueID)
 		r.Uint8(&pk.PlayerPermissions)
 		r.Uint8(&pk.CommandPermissions)
-		var layersLen uint8
-		r.Uint8(&layersLen)
-		pk.Layers = make([]protocol.AbilityLayer, layersLen)
 		protocol.SliceUint8Length(r, &pk.Layers)
 	} else {
 		var flags uint32
 		r.Varuint32(&flags)
+
 		var commandPermission uint32
 		r.Varuint32(&commandPermission)
 		pk.CommandPermissions = byte(commandPermission)
+
+		var actionPermissions uint32
+		r.Varuint32(&actionPermissions)
+
 		var playerPermission uint32
 		r.Varuint32(&playerPermission)
 		pk.PlayerPermissions = byte(playerPermission)
+
 		var customStoredPermission uint32
 		r.Varuint32(&customStoredPermission)
+
 		r.Int64(&pk.EntityUniqueID)
 
 		pk.Layers = make([]protocol.AbilityLayer, 0)
