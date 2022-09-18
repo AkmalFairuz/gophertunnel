@@ -398,7 +398,6 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	if r.ProtocolID() >= protocol.ID527 {
 		r.UUID(&pk.WorldTemplateID)
 	}
-	r.UUID(&pk.WorldTemplateID)
 	if r.ProtocolID() >= protocol.ID544 {
 		r.Bool(&pk.ClientSideGeneration)
 	}
